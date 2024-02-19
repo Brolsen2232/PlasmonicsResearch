@@ -1,8 +1,13 @@
+import meep as mp
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.animation as animation
 
 class Visualization:
+
+    def __init__(self, simulation):
+        self.simulation = simulation
+
     @staticmethod
     def plot_field_enhancement(simulation, field_component=mp.Ez):
         y_positions = np.linspace(-5, 5, 200)  
