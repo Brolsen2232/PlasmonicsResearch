@@ -128,7 +128,7 @@ def measure_baseline_field_intensity():
     e0_intensity = np.abs(ez_data)
     return e0_intensity
 
-
+'''
 def plot_field_enhancement(simulation, field_component=mp.Ez):
     y_positions = np.linspace(-5, 5, 200)  
     field_values = []
@@ -145,7 +145,7 @@ def plot_field_enhancement(simulation, field_component=mp.Ez):
     plt.legend()
     plt.grid(True)
     plt.show()
-
+'''
 from mpl_toolkits.mplot3d import Axes3D  
 
 def plot_steady_state_field_3D(simulation, field_component=mp.Ez, steady_state_time=200):

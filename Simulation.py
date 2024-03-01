@@ -1,3 +1,5 @@
+import meep as mp
+
 class SimulationSetup:
     def __init__(self, geometry, resolution=70):
         self.geometry = geometry

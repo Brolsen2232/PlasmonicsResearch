@@ -1,3 +1,5 @@
+import meep as mp
+
 class Geometry:
     def __init__(self, shape='triangle', material=None):
         self.shape = shape
