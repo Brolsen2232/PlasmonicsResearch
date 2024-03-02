@@ -48,3 +48,5 @@ class Material:
         ]
 
         return mp.Medium(epsilon=1.0, E_susceptibilities=Au_susc, valid_freq_range=metal_range)
+
+

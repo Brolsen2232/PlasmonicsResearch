@@ -1,0 +1,27 @@
+Choose the wave optics modules instad, Frequency Domain: 
+
+[1 700 THz]
+
+Parameters:
+
+wl: 500 nm 
+p: 300 nm //periodic distnact
+
+Make sure the height is longer than several wavelengths
+
+Add PML 
+100 nm is typically fine 
+JOhnson and Christy typical Au 
+
+Mesh size: 
+If you want to add field enhancement, add Aluminum Oxide layer, or some thin dielectric layer
+
+Si --> Somewhat lossy for visible spectra
+Au Substrate preferred, try with, assumed no transmission because the substrate is thick enough!'
+
+Stacking dielectrics, fractal geometries for high field enhancement
+
+Experimental possibilities:
+-Multiple electroplating 
+
+
