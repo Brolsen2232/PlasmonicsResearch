@@ -11,13 +11,11 @@ def inverse_design(model, target_enhancement, init_geometry):
         field_enhancement = calculate_field_enhancement_from_prediction(output)
 
         # Calculate gradient of field enhancement w.r.t. geometry_params
-        # ... (May involve Meep simulations IF your neural operator isn't fully differentiable )
 
         optimizer.zero_grad()
-        loss = (field_enhancement - target_enhancement)**2 # Example loss
+        loss = (field_enhancement - target_enhancement)**2 
         loss.backward()
         optimizer.step()
 
-        # ... Logging, checkpointing 
 
     return geometry_params 

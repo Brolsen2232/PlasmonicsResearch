@@ -21,7 +21,7 @@ def plot_ez_multislice_from_h5(filename):
         axes[0].set_title('Magnitude of Ez in xz plane')
         axes[0].set_xlabel('x')
         axes[0].set_ylabel('z')
-        fig.colorbar(im, ax=axes[0])  # Add a colorbar
+        fig.colorbar(im, ax=axes[0])  
 
         # xy plane (Magnitude)
         im = axes[1].imshow(np.abs(ez_data[xz_slice, :, :]).T, extent=[-0.5, 0.5, -0.5, 0.5], 

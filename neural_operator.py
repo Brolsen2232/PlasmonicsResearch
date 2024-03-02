@@ -6,28 +6,29 @@ class FieldEnhancementOperator(nn.Module):
         super().__init__()
 
         self.linear1 = nn.Linear(geometry_dim, 64)
-        self.fourier_modes = nn.Linear(64, 32)  # Parameterize Fourier modes
+        self.fourier_modes = nn.Linear(64, 32)
         self.linear2 = nn.Linear(32, field_dim)
-        self.shape_embedding = nn.Embedding(3, 8)  # For embedding shape type
+        self.shape_embedding = nn.Embedding(3, 8) 
         self.linear0 = nn.Linear(geometry_dim + 8, 64) 
 
     def forward(self, geometry_input):
-        shape_index = geometry_input[:, 0].long()  #
+        shape_index = geometry_input[:, 0].long()  
         shape_emb = self.shape_embedding(shape_index)
-        x = torch.cat([geometry_input[:, 1:], shape_emb], dim=1)  #
+        x = torch.cat([geometry_input[:, 1:], shape_emb], dim=1)  
         x = self.linear0(x)
-        x = self.linear1(geometry_input)
+        x = self.linear1(x)
         x = torch.sin(self.fourier_modes(x))  
         field_prediction = self.linear2(x)
-        return field_prediction.reshape(-1, field_dim)  
+        return field_prediction.reshape(-1, field_dim) 
+
     
     def get_relative_permittivity(self, geometry_input):
         grid_shape = self.field_dim.shape 
-        epsilon = torch.ones(grid_shape)  # Default ε = 1
+        epsilon = torch.ones(grid_shape)  
 
         center = geometry_input[0:3]
         size = geometry_input[3:6] 
-        material_type = geometry_input[6] # Assuming some material encoding
+        material_type = geometry_input[6] 
 
         material_region = calculate_material_region(center, size) 
 
@@ -38,13 +39,13 @@ class FieldEnhancementOperator(nn.Module):
 
     def calculate_pattern_deviation(predicted_field, num_fourier_terms=3): 
 
-        field_fft_x = torch.fft.fftn(predicted_field[:, 0, :]) # Example for Ex 
+        field_fft_x = torch.fft.fftn(predicted_field[:, 0, :]) 
         field_fft_y =  torch.fft.fftn(predicted_field[0, :, :]) 
         field_fft_y =  torch.fft.fftn(predicted_field[::,:, 0]) 
 
 
         pattern_coefficients = extract_coefficients(field_fft_x, field_fft_y, field_fft_z,  num_fourier_terms)
-        ideal_pattern = construct_ideal_pattern(pattern_coefficients)
+        ideal_pattern = construct_ideal_pattern(...)
 
         deviation = torch.mean((predicted_field - ideal_pattern)**2)
         return deviation 

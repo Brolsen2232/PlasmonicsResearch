@@ -1,77 +1,79 @@
 import meep as mp
 import numpy as np
-
+from material import make_gold_material  
 
 class ParameterizedGeometry:
     def __init__(self, params):
-        self.params = params
+         self.params = params
 
-    def get_params(self):
-        return self.params
+    def __getitem__(self, key):
+        return self.params.get(key) 
 
     def get_meep_geometry(self):
         geometry = []
+
         if 'shape_type' in self.params:
-            if self.params['shape_type'] == 'box':
+            shape_type = self.params['shape_type']
+            center = mp.Vector3(*self.params['center'])
+
+            if shape_type == 0:  # Box
                 size = mp.Vector3(*self.params['size'])
-                center = mp.Vector3(*self.params['center'])
-                geometry.append(mp.Block(size=size, center=center))
+                geometry.append(mp.Block(size=size, center=center, material=make_gold_material()))
  
-            elif self.params['shape_type'] == 'cylinder':
+            elif shape_type == 1:  # Cylinder
                 radius = self.params['radius']
                 height = self.params['height']
-                center = mp.Vector3(*self.params['center'])
-                geometry.append(mp.Cylinder(radius=radius, height=height, center=center, axis=mp.Vector3(0, 0, 1)))
-       
-            elif self.params['shape_type'] == 'sphere':
+                geometry.append(mp.Cylinder(radius=radius, height=height, center=center, axis=mp.Vector3(0, 0, 1), material=make_gold_material()))
+
+            elif shape_type == 2:  # Sphere
                 radius = self.params['radius']
-                center = mp.Vector3(*self.params['center'])
-                geometry.append(mp.Sphere(radius=radius, center=center))
+                geometry.append(mp.Sphere(radius=radius, center=center, material=make_gold_material()))
 
             else:
                 raise ValueError("Unsupported shape type")
 
-        return geometry 
-
-    #def get_material_regions(self):
-
 def generate_box_params():
     params = {
-            'shape_type': 'box',
-            'size': np.random.uniform(0.05, 0.2, size=3),
-            'center': np.random.uniform(-0.2, 0.2, size=3)
+            'shape_type': 0,  # Now with integer encoding
+            'size': np.random.uniform(0.01, 0.2, size=3),
+            'center': np.random.uniform(-0.2, 0.2, size=3),
+            'radius': 0,
+            'height': 0
         }
     return params
 
 def generate_cylinder_params():
     params = {
-            'shape_type': 'cylinder',
+            'shape_type': 1, 
+            'size': 0,
             'height': np.random.uniform(0.05, 0.15),
-            'radius': np.random.uniform(0.02, 0.05), 
+            'radius': np.random.uniform(0.01, 0.1), 
             'center': np.random.uniform(-0.2, 0.2, size=3) 
         }
     return params
 
 def generate_sphere_params():
     params = {
-            'shape_type': 'sphere',
+            'shape_type': 2, 
+            'size': 0,
             'radius': np.random.uniform(0.05, 0.1), 
-            'center': np.random.uniform(-0.2, 0.2, size=3)
+            'center': np.random.uniform(-0.2, 0.2, size=3), 
+            'height': 0
         }
     return params
 
 def generate_random_geometry_params():
-    num_objects = np.random.randint(1, 5)
-    params = [] 
+    num_objects = np.random.randint(1, 20)
+    geometries = {} 
 
-    for _ in range(num_objects):
+    for i in range(num_objects):  
         shape_choice = np.random.choice(['box', 'cylinder', 'sphere'])
 
         if shape_choice == 'box':
-            params.append(generate_box_params())
+            geometries[f'geometry_{i}'] = generate_box_params()  # Unique keys
         elif shape_choice == 'cylinder':
-            params.append(generate_cylinder_params())
+            geometries[f'geometry_{i}'] = generate_cylinder_params()
         else:
-            params.append(generate_sphere_params())
+            geometries[f'geometry_{i}'] = generate_sphere_params()
 
-    return params
+    return geometries 
