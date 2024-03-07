@@ -1,79 +1,88 @@
-import meep as mp
 import numpy as np
-from material import make_gold_material  
+import meep as mp 
+from material import make_gold_material
 
-class ParameterizedGeometry:
-    def __init__(self, params):
-         self.params = params
+class Geometry:
+    SHAPE_TYPES = {'box': 0, 'cylinder': 1, 'sphere': 2}  
+    def __init__(self, shape_type, center, material='gold', **kwargs):
+        self.shape_type = self.SHAPE_TYPES[shape_type]
+        self.center = center
+        self.material = material
+        self.size = kwargs.get('size')
+        self.radius = kwargs.get('radius')
+        self.height = kwargs.get('height')
 
-    def __getitem__(self, key):
-        return self.params.get(key) 
+    def get_encoding(self):  
+        encoding_parts = [self.shape_type, *self.center]  
 
-    def get_meep_geometry(self):
-        geometry = []
+        if self.size is not None:
+            encoding_parts.extend(self.size)
+        if self.radius is not None:
+            encoding_parts.append(self.radius)
+        if self.height is not None:
+            encoding_parts.append(self.height)
 
-        if 'shape_type' in self.params:
-            shape_type = self.params['shape_type']
-            center = mp.Vector3(*self.params['center'])
+        return np.array(encoding_parts) 
 
-            if shape_type == 0:  # Box
-                size = mp.Vector3(*self.params['size'])
-                geometry.append(mp.Block(size=size, center=center, material=make_gold_material()))
- 
-            elif shape_type == 1:  # Cylinder
-                radius = self.params['radius']
-                height = self.params['height']
-                geometry.append(mp.Cylinder(radius=radius, height=height, center=center, axis=mp.Vector3(0, 0, 1), material=make_gold_material()))
-
-            elif shape_type == 2:  # Sphere
-                radius = self.params['radius']
-                geometry.append(mp.Sphere(radius=radius, center=center, material=make_gold_material()))
-
-            else:
-                raise ValueError("Unsupported shape type")
-
-def generate_box_params():
-    params = {
-            'shape_type': 0,  # Now with integer encoding
-            'size': np.random.uniform(0.01, 0.2, size=3),
-            'center': np.random.uniform(-0.2, 0.2, size=3),
-            'radius': 0,
-            'height': 0
-        }
-    return params
-
-def generate_cylinder_params():
-    params = {
-            'shape_type': 1, 
-            'size': 0,
-            'height': np.random.uniform(0.05, 0.15),
-            'radius': np.random.uniform(0.01, 0.1), 
-            'center': np.random.uniform(-0.2, 0.2, size=3) 
-        }
-    return params
-
-def generate_sphere_params():
-    params = {
-            'shape_type': 2, 
-            'size': 0,
-            'radius': np.random.uniform(0.05, 0.1), 
-            'center': np.random.uniform(-0.2, 0.2, size=3), 
-            'height': 0
-        }
-    return params
-
-def generate_random_geometry_params():
-    num_objects = np.random.randint(1, 20)
-    geometries = {} 
-
-    for i in range(num_objects):  
-        shape_choice = np.random.choice(['box', 'cylinder', 'sphere'])
-
-        if shape_choice == 'box':
-            geometries[f'geometry_{i}'] = generate_box_params()  # Unique keys
-        elif shape_choice == 'cylinder':
-            geometries[f'geometry_{i}'] = generate_cylinder_params()
+    def get_meep_geometry(self, cell_size):
+        meep_geometry = []
+        if self.shape_type == 0:  # Box
+            meep_geometry.append(mp.Block(size=mp.Vector3(*self.size), 
+                                          center=mp.Vector3(*self.center), 
+                                          material=make_gold_material()))
+        elif self.shape_type == 1:  # Cylinder
+            meep_geometry.append(mp.Cylinder(radius=self.radius, 
+                                             height=self.height,
+                                             center=mp.Vector3(*self.center), 
+                                             axis=mp.Vector3(0, 0, 1), 
+                                             material=make_gold_material()))
+        elif self.shape_type == 2:  # Sphere
+            meep_geometry.append(mp.Sphere(radius=self.radius,
+                                           center=mp.Vector3(*self.center), 
+                                           material=make_gold_material()))
         else:
-            geometries[f'geometry_{i}'] = generate_sphere_params()
+            raise ValueError("Unsupported shape type")
+
+        return meep_geometry
+
+def generate_random_geometries(cell_size, num_geometries):
+    geometries = []  # Store pairs of (meep_geometry, geometry_params)
+    for _ in range(num_geometries):
+        shape_choice = np.random.choice(['box', 'cylinder', 'sphere'])
+        params = get_shape_parameters(shape_choice, cell_size)  
+        geom_param = Geometry(shape_type=shape_choice, **params)
+
+        meep_geometry = geom_param.get_meep_geometry(cell_size)
+        geometries.append((meep_geometry, geom_param))
 
     return geometries 
+
+def get_shape_parameters(shape_type, cell_size):
+    params = {}
+    if shape_type == 'box':
+        params['size'] = np.random.uniform(0.05, 0.2, size=3)
+        params['center'] = get_random_center(cell_size, params['size'])
+    elif shape_type == 'cylinder':
+        params['radius'] = np.random.uniform(0.02, 0.1)
+        params['height'] = np.random.uniform(0.05, 0.2)
+        params['center'] = get_random_center(cell_size, radius=params['radius'])  
+    elif shape_type == 'sphere':
+        params['radius'] = np.random.uniform(0.02, 0.1)
+        params['center'] = get_random_center(cell_size, radius=params['radius'])  
+    else:
+        raise ValueError('Unsupported shape type')
+
+    return params
+
+def get_random_center(cell_size, size=None, radius=None):
+    margin = 0.05 
+    max_coords = np.array(cell_size) - margin 
+    min_coords = np.array([margin, margin, margin]) 
+    if size is not None:
+        max_coords -= size / 2
+        min_coords += size / 2
+    elif radius is not None:
+        max_coords -= radius 
+        min_coords += radius 
+
+    return np.random.uniform(min_coords, max_coords) 

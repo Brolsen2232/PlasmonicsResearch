@@ -11,7 +11,6 @@ def make_gold_material():
     eV_um_scale = um_scale / 1.23984193  # Scale factor for converting eV to um^-1
     metal_range = mp.FreqRange(min=um_scale / 6.1992, max=um_scale / 0.24797)
 
-    # Plasma frequency and Drude model parameters for gold
     Au_plasma_frq = 9.03 * eV_um_scale
     Au_susc = [mp.DrudeSusceptibility(frequency=1e-10, gamma=0.053 * eV_um_scale, sigma=Au_plasma_frq**2 * 0.760)]
     Au_susc += [mp.LorentzianSusceptibility(frequency=f * eV_um_scale, gamma=g * eV_um_scale, sigma=Au_plasma_frq**2 * f_strength / (f * eV_um_scale)**2)
@@ -52,11 +51,9 @@ def measure_baseline_field_intensity(simulation):
     return np.abs(ez_data)
 
 def plot_field_magnitude_heatmap(simulation):
-    # Define simulation domain dimensions
     sim_size = simulation.cell_size
     resolution = simulation.resolution
     
-    # Extract the field components
     Ex = simulation.get_array(component=mp.Ex, size=sim_size, center=mp.Vector3())
     Ey = simulation.get_array(component=mp.Ey, size=sim_size, center=mp.Vector3())
     Ez = simulation.get_array(component=mp.Ez, size=sim_size, center=mp.Vector3())

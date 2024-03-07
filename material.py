@@ -11,6 +11,8 @@ class Material:
             raise ValueError("Unsupported material type")
     
 def make_gold_material():
+        um_scale = 1.0
+        eV_um_scale = um_scale / 1.23984193
         metal_range = mp.FreqRange(min=um_scale / 6.1992, max=um_scale / 0.24797)
         Au_plasma_frq = 9.03 * eV_um_scale
         Au_f0 = 0.760
